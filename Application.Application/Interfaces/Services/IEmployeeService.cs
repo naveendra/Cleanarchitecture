@@ -8,7 +8,7 @@ namespace Application.Application.Interfaces.Services
     public interface IEmployeeService
     {
         Task CreateEmployeeAsync(CreateEmployeeDto createEmployeeDto);
-        Task<List<GetEmployeeDto>> GetAllEmployeesAsync();
+        Task<List<GetEmployeeDto>> GetAllEmployeesAsync(int page, int pageSize);
 
         Task<GetEmployeeDto> GetEmployeeByIdAsync(int id);
 

@@ -5,7 +5,9 @@ using Application.Infrastructure.Persistence.Context;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
+using System.Linq.Dynamic.Core;
 using System.Text;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 namespace Application.Infrastructure.Persistence.Repositories
 {
@@ -44,17 +46,26 @@ namespace Application.Infrastructure.Persistence.Repositories
             await _context.SaveChangesAsync();
         }
 
-        public async Task<List<GetEmployeeDto>> GetAllEmployeesAsync()
+        public async Task<List<GetEmployeeDto>> GetAllEmployeesAsync(int page, int pageSize)
         {
-            return await _context.Employees.Where(e => !e.IsDeleted).Select(e => new GetEmployeeDto
-            {
-                Id = e.Id,
-                Name = e.Name,
-                EmployeeId = e.EmployeeId,
-                Address = e.Address,
-                City = e.City,
-                State = e.State,
-            }).AsNoTracking().ToListAsync();
+            var data = await _context.Employees
+        .Skip((page - 1) * pageSize)
+        .Take(pageSize)
+        .Select(e => new GetEmployeeDto
+        {
+            Id = e.Id,
+            Name = e.Name,
+            EmployeeId = e.EmployeeId,
+            Address = e.Address,
+            City = e.City,
+            State = e.State,
+        })
+        .AsNoTracking()
+        .ToListAsync();
+
+          
+
+            return data;         
            
         }
 

@@ -25,9 +25,9 @@ namespace Application.Application.Services
             await _employeeRepository.DeleteEmployeeAsync(id);
         }
 
-        public async Task<List<GetEmployeeDto>> GetAllEmployeesAsync()
+        public async Task<List<GetEmployeeDto>> GetAllEmployeesAsync(int page, int pageSize)
         {
-            return await _employeeRepository.GetAllEmployeesAsync();
+            return await _employeeRepository.GetAllEmployeesAsync(page, pageSize);
         }
 
         public async Task<GetEmployeeDto> GetEmployeeByIdAsync(int id)

@@ -8,7 +8,7 @@ namespace Application.Application.Interfaces.Repositories
     public interface IEmployeeRepository
     {
         Task CreateEmployeeAsync(CreateEmployeeDto createEmployeeDto);
-        Task<List<GetEmployeeDto>> GetAllEmployeesAsync();
+        Task<List<GetEmployeeDto>> GetAllEmployeesAsync(int page, int pageSize);
 
         Task<GetEmployeeDto> GetEmployeeByIdAsync(int id);
 
