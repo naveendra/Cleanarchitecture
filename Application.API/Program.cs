@@ -10,6 +10,9 @@ using FluentValidation;
 using FluentValidation.AspNetCore;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Application.Application.DependencyInjection;
+using Application.Infrastructure.DependencyInjection;
+using Application.API.Extensions;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -20,54 +23,36 @@ builder.Services.AddControllers();
 builder.Services.AddOpenApi();
 
 
-//db Context
-builder.Services.AddDbContext<DefaultDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-
-//service and repository
-builder.Services.AddScoped<IEmployeeService, EmployeeService>();
-builder.Services.AddScoped<IEmployeeRepository, EmployeeRepository>();
+// Register all services
+builder.Services
+    .AddApplicationServices()
+    .AddInfrastructureServices(builder.Configuration, builder.Environment)
+    .AddApiServices();
 
 
 
-//ffluentValidation
-builder.Services.AddFluentValidationAutoValidation();
-builder.Services.AddValidatorsFromAssemblyContaining<CreateEmployeeDtoValidator>();
-
-builder.Services.Configure<ApiBehaviorOptions>(options =>
-{
-    options.SuppressModelStateInvalidFilter = true;
-});
-
-
-// Add Filters
-builder.Services.AddControllers(options =>
-{
-    options.Filters.Add<ApiResponseFilter>();
-});
-
-// Swagger/OpenAPI configuration
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
-{
-    //app.MapOpenApi();
-    app.UseSwagger();
-    app.UseSwaggerUI();
-}
+//// Middleware order   Global Exception Handling (FIRST)
+//app.UseMiddleware<ExceptionMiddleware>();
 
-app.UseHttpsRedirection();
+//// Environment-based tools
+//if (app.Environment.IsDevelopment())
+//{
+//    //app.MapOpenApi();
+//    app.UseSwagger();
+//    app.UseSwaggerUI();
+//}
 
-// Middleware order
-app.UseMiddleware<ExceptionMiddleware>();
+//app.UseHttpsRedirection();
 
-app.UseAuthorization();
+//app.UseAuthorization();
 
-app.MapControllers();
+//app.MapControllers();
+
+
+app.UseApiMiddleware();
 
 app.Run();

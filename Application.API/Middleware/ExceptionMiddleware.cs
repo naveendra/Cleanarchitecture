@@ -1,4 +1,5 @@
 ﻿using Application.API.Models;
+using System.Net;
 using System.Text.Json;
 
 namespace Application.API.Middleware
@@ -6,13 +7,15 @@ namespace Application.API.Middleware
     public class ExceptionMiddleware
     {
         private readonly RequestDelegate _next;
+        private readonly ILogger<ExceptionMiddleware> _logger;
 
-        public ExceptionMiddleware(RequestDelegate next)
+        public ExceptionMiddleware(RequestDelegate next, ILogger<ExceptionMiddleware> logger)
         {
             _next = next;
+            _logger = logger;
         }
 
-        public async Task Invoke(HttpContext context)
+        public async Task InvokeAsync(HttpContext context)
         {
             try
             {
@@ -20,18 +23,34 @@ namespace Application.API.Middleware
             }
             catch (Exception ex)
             {
-                context.Response.StatusCode = 500;
-                context.Response.ContentType = "application/json";
+                _logger.LogError(ex, "Unhandled exception occurred");
 
-                var response = new ApiResponse<object>
-                {
-                    Success = false,
-                    Message = "An error occurred",
-                    Errors = ex.Message
-                };
-
-                await context.Response.WriteAsync(JsonSerializer.Serialize(response));
+                await HandleExceptionAsync(context, ex);
             }
+        }
+
+        private static Task HandleExceptionAsync(HttpContext context, Exception ex)
+        {
+            var statusCode = ex switch
+            {
+                ArgumentException => HttpStatusCode.BadRequest,
+                KeyNotFoundException => HttpStatusCode.NotFound,
+                UnauthorizedAccessException => HttpStatusCode.Unauthorized,
+                _ => HttpStatusCode.InternalServerError
+            };
+
+            var response = new
+            {
+                title = "An error occurred",
+                status = (int)statusCode,
+                detail = ex.Message,
+                traceId = context.TraceIdentifier
+            };
+
+            context.Response.ContentType = "application/json";
+            context.Response.StatusCode = (int)statusCode;
+
+            return context.Response.WriteAsync(JsonSerializer.Serialize(response));
         }
     }
 }

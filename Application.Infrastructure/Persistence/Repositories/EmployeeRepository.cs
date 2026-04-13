@@ -2,6 +2,7 @@
 using Application.Application.Interfaces.Repositories;
 using Application.Domain.Entities;
 using Application.Infrastructure.Persistence.Context;
+using Microsoft.Data.SqlTypes;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
@@ -20,7 +21,7 @@ namespace Application.Infrastructure.Persistence.Repositories
             _context = context;
         }
 
-        public async Task CreateEmployeeAsync(CreateEmployeeDto createEmployeeDto)
+        public async Task CreateEmployeeAsync(CreateEmployeeDto createEmployeeDto )
         {
             await _context.Employees.AddAsync(new Employee
             {
